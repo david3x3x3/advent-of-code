@@ -1,0 +1,26 @@
+import sys
+
+with open(sys.argv[1]) as fp:
+    cubes = [list(map(int,s.strip().split(','))) for s in fp.readlines()]
+    
+print(cubes)
+cs = set()
+for cube in cubes:
+    cs.add(tuple(cube))
+
+score = len(cubes)*6
+
+mins = [cubes[0][0],cubes[0][1],cubes[0][2]]
+maxs = [cubes[0][0],cubes[0][1],cubes[0][2]]
+
+for cube in cubes:
+    for axis in range(3):
+        cube[axis] -= 1
+        if tuple(cube) in cs:
+            score -= 1
+        cube[axis] += 2
+        if tuple(cube) in cs:
+            score -= 1
+        cube[axis] -= 1
+print(score)
+

@@ -1,0 +1,81 @@
+import sys, re
+from collections import namedtuple
+
+Pair = namedtuple('Pair', ['dist', 'x1', 'y1', 'x2', 'y2'])
+
+data = []
+with open(sys.argv[1]) as fp:
+    for words in [x.strip().split() for x in fp.readlines()]:
+        n = []
+        for i in ((2,'x1'),(3,'y1'),(8,'x2'),(9,'y2')):
+            n += [int(words[i[0]].split('=')[1].strip(':,'))]
+        data += [Pair(dist=abs(n[0]-n[2])+abs(n[1]-n[3]), x1=n[0], y1=n[1], x2=n[2], y2=n[3])]
+
+targety = int(sys.argv[2])
+
+#print(data, flush=True)
+
+for i, d in enumerate(data):
+    #print(d)
+    if i == 0:
+        minx = maxx = d.x1
+        miny = maxy = d.y1
+    if d.x1 - d.dist < minx :
+        minx = d.x1 - d.dist
+    if d.x1 + d.dist > maxx :
+        maxx = d.x1 + d.dist
+    if d.y1 - d.dist < miny :
+        miny = d.y1 - d.dist
+    if d.y1 + d.dist > maxy :
+        maxy = d.y1 + d.dist
+
+#print('\n'.join(map(str,data)))
+
+print(minx, miny, maxx, maxy)
+
+# mymap = []
+# for r in range(miny, maxy+1):
+#     if r == int(targety):
+#         c = '-'
+#     else:
+#         c = '.'
+#     mymap += [[c]*(maxx-minx+1)]
+
+print(f'mins = {minx},{miny}')
+
+segs = []
+beacons = set()
+
+for i, d in enumerate(data):
+    if d.y1-d.dist <= targety and d.y1+d.dist >= targety:
+        # for y3 in range(d.y1-d.dist, d.y1+d.dist+1):
+        #     for x3 in range(d.x1-d.dist, d.x1+d.dist+1):
+        #         if abs(d.x1-x3)+abs(d.y1-y3) <= d.dist:
+        #             mymap[y3-miny][x3-minx] = '%x' % i
+        # print('')
+        # for rownum, row in enumerate([''.join(r) for r in mymap]):
+        #     print('%3d %s' % (rownum+miny, row))
+        dist2 = d.dist-abs(d.y1-targety)
+        #print(f'line from {d.x1-dist2} to {d.x1+dist2}')
+        segs += [[d.x1-dist2, d.x1+dist2]]
+        if d.y2 == targety:
+            #print(f'hit: {d}')
+            beacons.add(d.x2)
+
+print('\n'.join(map(str,segs)))
+print(f'beacons = {list(beacons)}')
+min2 = segs[0][0]
+max2 = segs[0][1]
+for seg in segs[1:]:
+    if seg[0] < min2:
+        min2 = seg[0]
+    if seg[1] > max2:
+        max2 = seg[1]
+print(max2-min2+1-len(beacons))
+
+# for i, d in enumerate(data):
+#     mymap[d.y1-miny][d.x1-minx] = 'S'
+#     mymap[d.y2-miny][d.x2-minx] = 'B'
+
+#print('')
+#print(len([c for c in mymap[targety-miny] if c == '#']))

@@ -1,0 +1,120 @@
+import sys, copy
+
+mymap = []
+steps = []
+dirs = ((0, 1),(1,0),(0,-1),(-1,0))
+dirnames = 'RDLU'
+dir = 0
+with open(sys.argv[1]) as fp:
+    while True:
+        line = fp.readline().rstrip()
+        if line == '':
+            break
+        mymap += [list(line)]
+    line = fp.readline().strip()
+    print(line)
+    j = 0
+    for i, c in enumerate(line):
+        if not c.isnumeric():
+            print(j,i)
+            steps += [(int(line[j:i]), c)]
+            j = i+1
+    steps += [ (int(line[j:]), '') ]
+
+print(steps)
+print('\n'.join([''.join(x) for x in mymap]))
+
+r1 = 0
+c1 = mymap[0].index('.')
+for count, turn in steps:
+    print(f'count = {count}, turn = {turn}')
+    for x in range(count):
+        print('# moving')
+        print(f'loc = {r1},{c1}')
+        print(f'moving {count}, {turn}')
+        #mymap2 = copy.deepcopy(mymap)
+        #mymap2[r1][c1] = '@'
+        #print('\n'.join([''.join(x) for x in mymap2]))
+        # move
+        r2 = r1 + dirs[dir][0]
+        c2 = c1 + dirs[dir][1]
+        if r2 == len(mymap) or dir == 1 and (len(mymap[r2]) <= c2 or mymap[r2][c2] == ' '):
+            print('wrapped around bottom')
+            col = ''
+            for s in mymap:
+                if c2 < len(s):
+                    col += s[c2]
+                else:
+                    col += ' '
+            if '#' in col:
+                wall = col.index('#')
+            else:
+                wall == -1
+            floor = col.index('.')
+            if wall >= 0 and wall < floor:
+                print('blocked while wrapping around bottom')
+                # blocked
+                break
+            r2 = floor
+        if r2 < 0 or dir == 3 and (len(mymap[r2]) <= c2 or mymap[r2][c2] == ' '):
+            print('wrapped around top')
+            col = ''
+            for s in mymap:
+                if c2 < len(s):
+                    col += s[c2]
+                else:
+                    col += ' '
+            wall = col.rfind('#')
+            floor = col.rfind('.')
+            if wall >= 0 and wall > floor:
+                print('blocked while wrapping around top')
+                # blocked
+                break
+            r2 = floor
+        if c2 == len(mymap[r2]):
+            print('wrapped around right')
+            row = ''.join(mymap[r2])
+            if '#' in row:
+                wall = row.index('#')
+            else:
+                wall = -1
+            floor = row.index('.')
+            if wall >= 0 and wall < floor:
+                # blocked
+                break
+            c2 = floor
+        if c2 == -1 or mymap[r2][c2] == ' ':
+            print('wrapped around left')
+            wall = ''.join(mymap[r2]).rfind('#')
+            floor = ''.join(mymap[r2]).rfind('.')
+            if wall >= 0 and wall > floor:
+                # blocked
+                break
+            c2 = floor
+        if mymap[r2][c2] == '#':
+            print('blocked without wrapping')
+            # blocked
+            break
+        r1, c1 = r2, c2
+        print(f'after step = {r1},{c1}')
+    print(f'after move = {r1},{c1}')
+    #mymap2 = copy.deepcopy(mymap)
+    #mymap2[r1][c1] = '@'
+    #print('\n'.join([''.join(x) for x in mymap2]))
+
+    # turn
+    if turn == '':
+        break
+    elif turn == 'R':
+        dir = (dir+1)%4
+    elif turn == 'L':
+        dir = (dir+3)%4
+    else:
+        print("unknown turn")
+        exit(1)
+    print(f'newdir = {dir}')
+
+#print('\n'.join([''.join(x) for x in mymap]))
+    
+print(f'row = {r1}, col = {c1}, dir = {dir}')
+print((r1+1)*1000+(c1+1)*4+dir)
