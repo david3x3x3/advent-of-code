@@ -1,0 +1,30 @@
+import sys
+
+with open(sys.argv[1]) as fp:
+    lines = [s.strip() for s in fp.readlines()]
+
+def encsnafu(n):
+    res = []
+    while n > 0:
+        res += [n%5]
+        n //= 5
+    i=0
+    while i < len(res):
+        while res[i] > 2:
+            if i+1 >= len(res):
+                res += [0]
+            res[i] -= 5
+            res[i+1] += 1
+        i += 1
+    return ''.join(['=-012'[n+2] for n in reversed(res)])
+
+def decode(s):
+    return sum([('=-012'.index(c) - 2) * pow(5, i) for i, c in enumerate(reversed(s))])
+
+total = 0
+for num in lines:
+    res = decode(num)
+    print(res, num)
+    total += res
+print(total)
+print(encsnafu(total))

@@ -1,0 +1,104 @@
+import sys
+from collections import defaultdict
+
+dirs = []
+dirs += [[[-1, 0],[-1,-1],[-1, 1]]] # north
+dirs += [[[ 1, 0],[ 1,-1],[ 1, 1]]] # south
+dirs += [[[ 0,-1],[-1,-1],[ 1,-1]]] # west
+dirs += [[[ 0, 1],[-1, 1],[ 1, 1]]] # east
+
+print('\n'.join(map(str,dirs)), '\n')
+# dirs = dirs[1:] + dirs[:1]
+# print('\n'.join(map(str,dirs)), '\n')
+
+with open(sys.argv[1]) as fp:
+    lines = [s.strip() for s in fp.readlines()]
+
+elves = set()
+for r1, row in enumerate(lines):
+    for c1, val in enumerate(row):
+        if val == '#':
+            elves.add((r1,c1))
+
+rows = [elf[0] for elf in elves]
+cols = [elf[1] for elf in elves]
+minr = min(rows)
+maxr = max(rows)
+minc = min(cols)
+maxc = max(cols)
+mymap = []
+for r1 in range(maxr-minr+1):
+    mymap += [['.']*(maxc-minc+1)]
+for elf in elves:
+    mymap[elf[0]-minr][elf[1]-minc] = '#'
+print('\n'.join([''.join(row) for row in mymap]))
+print(f'num elves = {len(elves)}')
+
+round = 0
+while True:
+    round += 1
+    print(f'round {round}')
+    goals = defaultdict(lambda: 0)
+    stuck = set()
+    dest = {}
+    safe = 0
+
+    for elf in elves:
+        #print(f'elf = {elf}')
+        moved = False
+        neighbors = -1
+        for r1 in range(elf[0]-1,elf[0]+2):
+            for c1 in range(elf[1]-1,elf[1]+2):
+                if (r1,c1) in elves:
+                    neighbors += 1
+        if neighbors < 1:
+            dest[elf] = elf
+            safe += 1
+            # no neighbors; don't move
+            continue
+        for dirs2 in dirs:
+            ok = True
+            for dir in dirs2:
+                e2 = (elf[0]+dir[0], elf[1]+dir[1])
+                if e2 in elves:
+                    ok = False
+                    break
+            if ok:
+                moved = True
+                e2 = (elf[0]+dirs2[0][0], elf[1]+dirs2[0][1])
+                goals[e2] += 1
+                dest[elf] = e2
+                break
+        if not moved:
+            stuck.add(elf)
+    if safe == len(elves):
+        print(f'finished in round {round}')
+        exit(0)
+    print('goals:')
+    print([(d,goals[d]) for d in goals])
+    print(f'stuck: {list(stuck)}')
+    tmp_elves = set()
+    for elf in elves:
+        if elf in stuck or goals[dest[elf]] > 1:
+            tmp_elves.add(elf)
+        else:
+            tmp_elves.add(dest[elf])
+    elves = tmp_elves
+    dirs = dirs[1:] + dirs[:1]
+
+    #print(list(elves))
+    rows = [elf[0] for elf in elves]
+    cols = [elf[1] for elf in elves]
+    minr = min(rows)
+    maxr = max(rows)
+    minc = min(cols)
+    maxc = max(cols)
+    #print(f'range = {minr},{minc} to {maxr},{maxc}')
+    mymap = []
+    for r1 in range(maxr-minr+1):
+        mymap += [['.']*(maxc-minc+1)]
+    for elf in elves:
+        mymap[elf[0]-minr][elf[1]-minc] = '#'
+    print('\n'.join([''.join(row) for row in mymap]))
+    print(f'num elves = {len(elves)}')
+    print(f'score = {(maxr-minr+1)*(maxc-minc+1)-len(elves)}')
