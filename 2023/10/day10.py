@@ -2,10 +2,11 @@ import sys
 
 lines = open(sys.argv[1]).read().strip().split('\n')
 
-answer1 = 0
-
 grid = {}
 grid2 = {}
+# line drawing characters for better display
+ch_to_line = {'F': '┌', 'L': '└', '7': '┐', 'J': '┘', '|': '│',
+              '-': '─', '.': '▪', '@': '▓'}
 
 for line_num, line in enumerate(lines):
     for ch_num, ch in enumerate(line):
@@ -13,8 +14,8 @@ for line_num, line in enumerate(lines):
         if ch == 'S':
             pos = c
         grid[c] = ch
-grid_rows = line_num
-grid_cols = ch_num
+grid_rows = line_num+1
+grid_cols = ch_num+1
 
 dird = {'F': {(-1, 0): (0, 1), (0, -1): (1, 0)},
         '7': {(0, 1): (1, 0), (-1, 0): (0, -1)},
@@ -28,20 +29,18 @@ done = False
 cw_dirs = ((-1, 0), (0, 1), (1, 0), (0, -1))
 ccw_dirs = list(reversed(cw_dirs))
 
-# follow the pipe
 answer1 = 0
-next_dir = None
+# figure out the starting direction
+for next_dir in cw_dirs:
+    dr, dc = next_dir
+    pos2 = (pos[0]+dr, pos[1]+dc)
+    if pos2 in grid and \
+       grid[pos2] in dird and \
+       next_dir in dird[grid[pos2]]:
+        break
+# follow the pipe
 while True:
     # print(f'pos = {pos}')
-    if next_dir is None:
-        for next_dir in ((-1, 0), (0, 1), (1, 0), (0, -1)):
-            dr, dc = next_dir
-            pos2 = (pos[0]+dr, pos[1]+dc)
-            if pos2 in grid and \
-               grid[pos2] in dird and \
-               next_dir in dird[grid[pos2]]:
-                start_dir = next_dir
-                break
     pos = (next_dir[0]+pos[0], next_dir[1]+pos[1])
     grid2[pos] = grid[pos]
     answer1 += 1
@@ -76,11 +75,13 @@ answer2 = 0
 for row in range(grid_rows):
     for col in range(grid_cols):
         if (row, col) in grid2:
-            print(grid2[(row, col)], end='')
-            if grid2[(row, col)] == '@':
-                answer2 += 1
+            ch = grid2[(row, col)]
         else:
-            print('.', end='')
+            ch = '.'
+        ch2 = ch_to_line[ch] if ch in ch_to_line else ch
+        print(ch2, end='')
+        if ch == '@':
+            answer2 += 1
     print('')
 
 answer1 //= 2
