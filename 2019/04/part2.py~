@@ -1,0 +1,10 @@
+a = 206938
+b = 679128
+count = 0
+for p in range(a, b+1):
+    ps = list(map(int,str(p)))
+    d = [ps[n+1] - ps[n] for n in range(len(ps)-1)]
+    if 0 not in d or True in [x < 0 for x in d]:
+        continue
+    count += 1
+    print(count, p, d)

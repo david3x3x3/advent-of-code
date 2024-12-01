@@ -1,0 +1,6 @@
+import sys
+
+with open(sys.argv[1]) as fp:
+    data = [line.split(')') for line in fp.readlines()]
+
+print(data)
